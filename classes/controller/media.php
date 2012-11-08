@@ -7,7 +7,7 @@
  */
 class Controller_Media extends Controller{
 
-    private $gzip = TRUE;
+    private $gzip = FALSE;
 
     /**
      * 输出合并后的静态文件文件

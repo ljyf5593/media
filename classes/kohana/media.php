@@ -15,6 +15,8 @@ class Kohana_Media{
 
 	private $js = array();
 
+	private $js_code = array();
+
 	/**
 	 * 注意，合并后存在的文件夹一定要和原有的CSS文件处于同一个文件夹深度，因为css文件里面可能有图片文件引入使用的是相对路径
 	 * @var string
@@ -46,6 +48,14 @@ class Kohana_Media{
 		$this->js[] = 'media/'.$js;
 	}
 
+	/**
+	 * javascript代码
+	 * @param $js_code
+	 */
+	public function js_code($js_code){
+		$this->js_code[] = $js_code;
+	}
+
 	public function render_css(){
 		$style = '';
 		if(!empty($this->css)){
@@ -64,6 +74,17 @@ class Kohana_Media{
 
 	public function render_js(){
 		$script = '';
+		if(!empty($this->js_code)){
+			$code = implode(";\n",$this->js_code);
+			$script .= <<<JS
+<script type="text/javascript">
+	{$code};
+</script>
+
+JS;
+
+		}
+
 		if(!empty($this->js)){
 			foreach($this->js as $js){
 				$script .= HTML::script($js, array(), TRUE)."\n";
@@ -116,7 +137,7 @@ class Kohana_Media{
 	}
 
 	/**
-	 * 返回JS与CSS的写入路径
+	 * 返回CSS的写入路径
 	 * @return string
 	 */
 	private function get_merge_file_realpath(){
@@ -130,7 +151,7 @@ class Kohana_Media{
 	}
 
 	/**
-	 * 判断是否要进行CSS压缩，根据已生成的文件与源文件的时间来确定
+	 * 判断是否要进行CSS合并，根据已生成的文件与源文件的时间来确定
 	 * @param $path
 	 */
 	private function need_merge($path){
