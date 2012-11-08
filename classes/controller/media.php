@@ -45,7 +45,7 @@ class Controller_Media extends Controller{
             }
 
             // Check if the browser sent an "if-none-match: <etag>" header, and tell if the file hasn't changed
-            $this->response->check_cache(sha1($this->request->uri()).filemtime($compress_file->file), $this->request);
+            $this->check_cache(sha1($this->request->uri()).filemtime($compress_file->file), $this->request);
 
             // Send the file content as the response
             $this->response->body($compress_file->render());
