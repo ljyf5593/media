@@ -25,10 +25,11 @@ class Controller_Media extends Controller{
         if ($compress_file !== FALSE)
         {
 
+            /*
             // Smush.it png, gif and jpg files
             if (in_array($compress_file->ext, array('png', 'gif', 'jpg', 'jpeg', 'ico')))
             {
-                //$compress_file = $compress_file->smushit();
+                $compress_file = $compress_file->smushit();
             }
 
             // Minify js and css files
@@ -36,6 +37,7 @@ class Controller_Media extends Controller{
             {
                 $compress_file = $compress_file->minify();
             }
+            */
 
             // Gzip files if flagged
             if ($this->gzip === TRUE)
@@ -52,6 +54,7 @@ class Controller_Media extends Controller{
 
             // Set the proper headers to allow caching
             $this->response->headers('content-type',  File::mime_by_ext($compress_file->ext));
+            $this->response->headers('Content-Length', (string) filesize($compress_file->cache));
             $this->response->headers('last-modified', date('r', filemtime($compress_file->file)));
         }
         else
