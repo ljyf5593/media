@@ -128,7 +128,7 @@ class Watermark {
 	/**
 	 * 水印预览
 	 */
-	public function preview(){
+	public function preview(Response $response){
 		$watermark_config = $this->get_config();
 		if(Arr::get($watermark_config, 'status')){ // 检测是否开启水印
 			$file_name = '/img/watermark_template';
@@ -136,14 +136,11 @@ class Watermark {
 
 				$template = $this->run(Image::factory($template_file));
 
-				$response = Request::$current->response();
-				$response->headers('Content-Type', 'image/png');
+				$response->headers('Content-Type', $template->mime);
 				$response->headers('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
 				$response->headers('Pragma', 'no-cache');
 				$response->headers('Connection', 'close');
-
-				echo $response->send_headers()->body($template->render());
-				die();
+				echo $response->send_headers(TRUE)->body($template->render());die();
 
 			} else {
 				throw new View_Exception('The template file :file could not be found', array(
@@ -152,7 +149,7 @@ class Watermark {
 			}
 
 		} else {
-			echo Request::$current->execute()->send_headers()->body('未开启水印功能');die();
+			$response->send_headers()->body('未开启水印功能');die();
 		}
 	}
 
