@@ -16,22 +16,20 @@ class Kohana_Compress {
 	// File extension
 	public $ext = NULL;
 
-	/**
-	 * Creates a new Media object.
-	 *
-	 * @param array configuration
-	 * @return void
-	 */
-	public function __construct()
+    /**
+     * 构建一个压缩实例
+     * @param Request $request
+     */
+    public function __construct(Request $request)
 	{
-		$this->request = Request::current();
+		$this->request = $request;
 	}
 
 	/**
 	 * Load a media file
 	 *
-	 * @param string filename
-	 * @return void
+	 * @param string $filename
+	 * @return Compress | bool
 	 */
 	public function load($filename = NULL)
 	{
@@ -56,7 +54,7 @@ class Kohana_Compress {
 	/**
 	 * Gzip loaded file
 	 *
-	 * @return void
+	 * @return Compress
 	 */
 	public function gzip()
 	{
@@ -67,7 +65,7 @@ class Kohana_Compress {
 		}
 
 		// Find accepted encodings
-		$encodings = Request::current()->accept_encoding();
+		$encodings = $this->request->accept_encoding();
 
 		// Check if browser supports gzip encoding
 		if (in_array('gzip', array_keys($encodings)))
@@ -92,7 +90,7 @@ class Kohana_Compress {
 	/**
 	 * Minify wrapper for js and css files
 	 *
-	 * @return void
+	 * @return Compress
 	 */
 	public function minify()
 	{
@@ -109,7 +107,7 @@ class Kohana_Compress {
 	/**
 	 * Smush.it API call
 	 *
-	 * @return void
+	 * @return Compress
 	 */
 	public function smushit()
 	{
@@ -154,7 +152,7 @@ class Kohana_Compress {
 	/**
 	 * Check if source file has changed since last generation of cache
 	 *
-	 * @return void
+	 * @return bool
 	 */
 	private function _changed($cache = NULL)
 	{
@@ -196,21 +194,12 @@ class Kohana_Compress {
 	/**
 	 * Write contents to cache file
 	 *
-	 * @param string contents
+	 * @param string $contents
+     * @param string $filename
 	 * @return void
 	 */
 	private function _write_cache($contents = NULL, $filename = NULL)
 	{
-		// Check if cache directory exists
-		if ( ! is_dir($this->_cache_dir))
-		{
-			// Create the cache directory
-			mkdir($this->_cache_dir, 02777);
-
-			// Set permissions (must be manually set to fix umask issues)
-			chmod($this->_cache_dir, 02777);
-		}
-
 		// Set the cache filename
 		$this->cache = $filename;
 

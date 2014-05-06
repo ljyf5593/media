@@ -18,7 +18,7 @@ class Controller_Media extends Controller{
         // Get the file path from the request
         $file = $this->request->param('file');
 
-        $compress = new Compress();
+        $compress = new Compress($this->request);
 
         $compress_file = $compress->load($file);
 
@@ -82,8 +82,10 @@ class Controller_Media extends Controller{
             // 给图片添加水印
             $watermark_url = Watermark::instance()->watermark($image, 'upload');
         }
-
-        $this->request->redirect($watermark_url);
+        if($watermark_url){
+            $this->redirect($watermark_url);
+        }
+        exit(1);
     }
 
 

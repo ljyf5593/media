@@ -173,7 +173,7 @@ class Watermark {
 
 			$path_info = pathinfo($watermark_file);
 			if(!is_dir($path_info['dirname'])){
-				mkdir($path_info['dirname'], 0777, TRUE);
+				mkdir($path_info['dirname'], 02777, TRUE);
 			}
 
 			// 读取传入的图片
@@ -182,12 +182,19 @@ class Watermark {
 			} else {
 				$template_file = $image;
 			}
+			
+			$real_file = DOCROOT.$template_file;
+			// 如果文件存在
+			if(file_exists($real_file)){
+				$template = $this->run(Image::factory($real_file));
+				$template->save($watermark_file);
+				return $watermark_url;
+			} else {
+				Kohana::$log->add(Log::WARNING, 'file :file not found', array(':file' => $real_file));
 
-			$template = $this->run(Image::factory(DOCROOT.$template_file));
-			$template->save($watermark_file);
+				return FALSE;
+			}
 		}
-
-		return $watermark_url;
 	}
 
 	/**

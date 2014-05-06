@@ -15,11 +15,13 @@ class Kohana_Media{
 
 	private $js = array();
 
+	private $js_code = array();
+
 	/**
 	 * 注意，合并后存在的文件夹一定要和原有的CSS文件处于同一个文件夹深度，因为css文件里面可能有图片文件引入使用的是相对路径
 	 * @var string
 	 */
-	private $merge_path = 'media/compress/';
+	private $merge_path = 'compress/css/';
 
 	public static function get_instance($module = NULL){
 		if(self::$instance instanceof self){
@@ -34,7 +36,7 @@ class Kohana_Media{
 	private function __construct($module){
 		$this->module = $module;
 		if($module !== NULL){
-			$this->merge_path = 'media/'.$module.'/compress/';
+			$this->merge_path = 'compress/'.$module.'/css/';
 		}
 	}
 
@@ -46,6 +48,14 @@ class Kohana_Media{
 		$this->js[] = 'media/'.$js;
 	}
 
+	/**
+	 * javascript代码
+	 * @param $js_code
+	 */
+	public function js_code($js_code){
+		$this->js_code[] = $js_code;
+	}
+
 	public function render_css(){
 		$style = '';
 		if(!empty($this->css)){
@@ -55,7 +65,13 @@ class Kohana_Media{
 				}
 			} else { // 否则合并CSS文件
 				$merge_css = $this->merge_css();
-				$style = HTML::style($merge_css, array(), TRUE)."\n";
+				if($merge_css){
+					$style .= HTML::style($merge_css, array(), TRUE)."\n";
+				} else {
+					foreach($this->css as $css){
+						$style .= HTML::style('media/'.$css, array(), TRUE)."\n";
+					}
+				}
 			}
 		}
 
@@ -64,6 +80,17 @@ class Kohana_Media{
 
 	public function render_js(){
 		$script = '';
+
+		if(!empty($this->js_code)){
+			$code = implode(";\n",$this->js_code);
+			$script .= <<<JS
+<script type="text/javascript">
+	{$code};
+</script>
+
+JS;
+		}
+
 		if(!empty($this->js)){
 			foreach($this->js as $js){
 				$script .= HTML::script($js, array(), TRUE)."\n";
@@ -78,20 +105,41 @@ class Kohana_Media{
 	private function merge_css(){
 
 		$merge_path = $this->get_merge_file_realpath();
+
 		//如果需要合并CSS文件
 		if($this->need_merge($merge_path)){
 
 			$compress_dir = pathinfo($merge_path, PATHINFO_DIRNAME);
-			if(!is_dir($compress_dir)){
-				mkdir($compress_dir);
-			}
-			$content = '';
-			foreach($this->css as $file){
-				$file_path = $this->getfile($file);
-				$content .= file_get_contents($file_path);
-			}
+			try{
+				if(!is_dir($compress_dir)){
+					mkdir($compress_dir, 02777, TRUE);
+				}
 
-			file_put_contents($merge_path, $content);
+				// 如果合并的css文件存在则删除
+				if(file_exists($merge_path)){
+					unlink($merge_path);
+				}
+				$new_merge_handle = fopen($merge_path, 'a');
+
+				foreach($this->css as $file){
+					$file_path = $this->getfile($file);
+					$file_handle = fopen($file_path, 'r');
+					$i = 0;
+			        while (!feof($file_handle))
+			        {
+			        	fseek($file_handle, $i*4096);
+			        	fwrite($new_merge_handle, fread($file_handle, 4096));
+			            $i++;
+			        }
+			        fclose($file_handle);
+				}
+
+				fclose($new_merge_handle);
+			} catch (Exception $e){
+				Kohana_Exception::log($e);
+				return FALSE;
+			}
+			
 		}
 
 		return $this->get_merge_file();
@@ -108,11 +156,7 @@ class Kohana_Media{
 	 */
 	private function get_merge_file(){
 		$file_name = $this->get_file_name();
-		if($this->module){
-			return $this->merge_path.$file_name.'.css';
-		} else {
-			return $this->merge_path.$file_name.'.css';
-		}
+		return $this->merge_path.$file_name.'.css';
 	}
 
 	/**
@@ -122,11 +166,7 @@ class Kohana_Media{
 	private function get_merge_file_realpath(){
 		$file_name = $this->get_file_name();
 		$path = str_replace('/', DIRECTORY_SEPARATOR, $this->merge_path);
-		if($this->module){
-			return MODPATH.DIRECTORY_SEPARATOR.$this->module.DIRECTORY_SEPARATOR.$path.$file_name.'.css';
-		} else {
-			return APPPATH.$path.$file_name.'.css';
-		}
+		return DOCROOT.$path.$file_name.'.css';
 	}
 
 	/**
@@ -134,7 +174,6 @@ class Kohana_Media{
 	 * @param $path
 	 */
 	private function need_merge($path){
-
 		if(!file_exists($path)){
 			return TRUE;
 		}
