@@ -41,11 +41,15 @@ class Kohana_Media{
 	}
 
 	public function css($css){
-		$this->css[] = $css;
+		if (! isset($this->css[$css])) {
+			$this->css[$css] = TRUE;
+		}
 	}
 
 	public function js($js){
-		$this->js[] = 'media/'.$js;
+		if (! isset($this->js[$js])) {
+			$this->js[$js] = TRUE;
+		}
 	}
 
 	/**
@@ -60,16 +64,16 @@ class Kohana_Media{
 		$style = '';
 		if(!empty($this->css)){
 			if(Kohana::$environment === Kohana::DEVELOPMENT){ // 如果是开发状态，则不合并CSS
-				foreach($this->css as $css){
-					$style .= HTML::style('media/'.$css, array(), TRUE)."\n";
+				foreach($this->css as $css => $status){
+					$style .= HTML::style($css, array(), TRUE)."\n";
 				}
 			} else { // 否则合并CSS文件
 				$merge_css = $this->merge_css();
 				if($merge_css){
 					$style .= HTML::style($merge_css, array(), TRUE)."\n";
 				} else {
-					foreach($this->css as $css){
-						$style .= HTML::style('media/'.$css, array(), TRUE)."\n";
+					foreach($this->css as $css => $status){
+						$style .= HTML::style($css, array(), TRUE)."\n";
 					}
 				}
 			}
@@ -92,7 +96,7 @@ JS;
 		}
 
 		if(!empty($this->js)){
-			foreach($this->js as $js){
+			foreach($this->js as $js => $status){
 				$script .= HTML::script($js, array(), TRUE)."\n";
 			}
 		}
@@ -121,7 +125,7 @@ JS;
 				}
 				$new_merge_handle = fopen($merge_path, 'a');
 
-				foreach($this->css as $file){
+				foreach($this->css as $file => $status){
 					$file_path = $this->getfile($file);
 					$file_handle = fopen($file_path, 'r');
 					$i = 0;
@@ -146,7 +150,7 @@ JS;
 	}
 
 	private function get_file_name(){
-		$salt = implode('', $this->css);
+		$salt = implode('', array_keys($this->css));
 		return md5($salt);
 	}
 
@@ -180,7 +184,7 @@ JS;
 
 		$merge_filetime = filemtime($path);
 
-		foreach($this->css as $file){
+		foreach($this->css as $file => $status){
 
 			$file_time = filemtime($this->getfile($file));
 
