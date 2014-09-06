@@ -5,7 +5,7 @@
  * @author  Jie.Liu (ljyf5593@gmail.com)
  * @Id $Id: media.php 68 2012-08-28 10:16:13Z Jie.Liu $
  */
-class Controller_Media extends Controller{
+class Controller_Media extends Controller {
 
     private $gzip = TRUE;
 

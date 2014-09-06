@@ -7,6 +7,11 @@
  * @Id $Id: init.php 64 2012-08-24 11:08:56Z Jie.Liu $
  */
 
+// 附件上传
+Route::set('attachment', 'attachment(/<action>)')
+    ->defaults(array(
+        'controller' => 'attachment',
+    ));
 // 图片请求URL，加载水印信息
 Route::set('image', 'upload(/<image>)', array('image' => '.+'))
 	->defaults(array(
