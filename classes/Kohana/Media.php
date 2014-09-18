@@ -7,9 +7,7 @@
  */
 class Kohana_Media{
 
-	protected static $instance = array();
-
-	private $module = NULL;
+	protected static $instance = NULL;
 
 	private $css = array();
 
@@ -25,18 +23,17 @@ class Kohana_Media{
 	 */
 	private $merge_path = 'compress/css/';
 
-	public static function get_instance($module = 'application'){
-		if(isset(self::$instance[$module]) AND self::$instance[$module] instanceof self){
-			return self::$instance[$module];
+	public static function get_instance(){
+		if(self::$instance instanceof self){
+			return self::$instance;
 		}
 
-		self::$instance[$module] = new self($module);
+		self::$instance = new self();
 
-		return self::$instance[$module];
+		return self::$instance;
 	}
 
-	private function __construct($module){
-		$this->module = $module;
+	private function __construct(){
 		$this->_config = Kohana::$config->load('media');
 	}
 
@@ -53,7 +50,10 @@ class Kohana_Media{
 	}
 
 	public function editor_js() {
-		$this->js('media/kindEditor/kindeditor-all-min.js');
+		$this->js('kindEditor/kindeditor-all-min.js');
+		$js_code = "var UPLOAD_URL = \"".URL::site('/attachment/upload')."\";\n";
+		$js_code .= "var FILE_MANAGE_URL = \"".URL::site('/attachment/manage')."\";\n";
+		$this->js_code($js_code);
 	}
 
 	/**
@@ -70,16 +70,12 @@ class Kohana_Media{
 			if($this->_config['merge_css']){ // 如果是开发状态，则不合并CSS
 				$merge_css = $this->merge_css();
 				if($merge_css){
-					$style .= HTML::style($merge_css, array(), TRUE)."\n";
-				} else {
-					foreach($this->css as $css => $status){
-						$style .= HTML::style($css, array(), TRUE)."\n";
-					}
+					return HTML::style($merge_css, array(), TRUE)."\n";
 				}
-			} else { // 否则合并CSS文件
-				foreach($this->css as $css => $status){
-					$style .= HTML::style($css, array(), TRUE)."\n";
-				}
+			}
+
+			foreach($this->css as $css => $status){
+				$style .= HTML::style($this->_config['dir'].$css, array(), TRUE)."\n";
 			}
 		}
 
@@ -101,7 +97,7 @@ JS;
 
 		if(!empty($this->js)){
 			foreach($this->js as $js => $status){
-				$script .= HTML::script($js, array(), TRUE)."\n";
+				$script .= HTML::script($this->_config['dir'].$js, array(), TRUE)."\n";
 			}
 		}
 		return $script;
@@ -204,7 +200,7 @@ JS;
 		$ext = pathinfo($file, PATHINFO_EXTENSION);
 		// Remove the extension from the filename
 		$filename = substr($file, 0, -(strlen($ext) + 1));
-		$file = Kohana::find_file('', $filename, $ext);
+		$file = Kohana::find_file($this->_config['dir'], $filename, $ext);
 		if($file){
 			return $file;
 		} else {
