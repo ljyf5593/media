@@ -52,6 +52,10 @@ class Kohana_Media{
 		}
 	}
 
+	public function editor_js() {
+		$this->js('media/kindEditor/kindeditor-all-min.js');
+	}
+
 	/**
 	 * javascript代码
 	 * @param $js_code
@@ -200,12 +204,11 @@ JS;
 		$ext = pathinfo($file, PATHINFO_EXTENSION);
 		// Remove the extension from the filename
 		$filename = substr($file, 0, -(strlen($ext) + 1));
-		$file = Kohana::find_file('media', $filename, $ext);
+		$file = Kohana::find_file('', $filename, $ext);
 		if($file){
 			return $file;
 		} else {
-			var_dump($file);die();
-			throw new Kohana_Exception('No such file :file was loaded by the media module.', array(':file' => $file));
+			throw new Kohana_Exception('No such file :file was loaded by the media module.', array(':file' => $filename.'.'.$ext));
 		}
 	}
 }

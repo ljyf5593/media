@@ -26,7 +26,7 @@ class Model_Attachment extends ORM {
 		'dateline',
 	);
 
-	public function get_preview() {
+	public function get_path() {
 		return $this->path.'&nbsp;<a target="_blank" href="'.URL::site('/upload/'.$this->path).'"><img height="100" class="preview" src="'.URL::site('/upload/'.$this->path).'"><i class="icon-picture icon-green icon-large"></i></a>';
 	}
 
