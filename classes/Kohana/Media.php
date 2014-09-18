@@ -7,13 +7,15 @@
  */
 class Kohana_Media{
 
-	protected static $instance = NULL;
+	protected static $instance = array();
 
 	private $module = NULL;
 
 	private $css = array();
 
 	private $js = array();
+
+	private $_config = array();
 
 	private $js_code = array();
 
@@ -23,21 +25,19 @@ class Kohana_Media{
 	 */
 	private $merge_path = 'compress/css/';
 
-	public static function get_instance($module = NULL){
-		if(self::$instance instanceof self){
-			return self::$instance;
+	public static function get_instance($module = 'application'){
+		if(isset(self::$instance[$module]) AND self::$instance[$module] instanceof self){
+			return self::$instance[$module];
 		}
 
-		self::$instance = new self($module);
+		self::$instance[$module] = new self($module);
 
-		return self::$instance;
+		return self::$instance[$module];
 	}
 
 	private function __construct($module){
 		$this->module = $module;
-		if($module !== NULL){
-			$this->merge_path = 'compress/'.$module.'/css/';
-		}
+		$this->_config = Kohana::$config->load('media');
 	}
 
 	public function css($css){
@@ -63,11 +63,7 @@ class Kohana_Media{
 	public function render_css(){
 		$style = '';
 		if(!empty($this->css)){
-			if(Kohana::$environment === Kohana::DEVELOPMENT){ // 如果是开发状态，则不合并CSS
-				foreach($this->css as $css => $status){
-					$style .= HTML::style($css, array(), TRUE)."\n";
-				}
-			} else { // 否则合并CSS文件
+			if($this->_config['merge_css']){ // 如果是开发状态，则不合并CSS
 				$merge_css = $this->merge_css();
 				if($merge_css){
 					$style .= HTML::style($merge_css, array(), TRUE)."\n";
@@ -75,6 +71,10 @@ class Kohana_Media{
 					foreach($this->css as $css => $status){
 						$style .= HTML::style($css, array(), TRUE)."\n";
 					}
+				}
+			} else { // 否则合并CSS文件
+				foreach($this->css as $css => $status){
+					$style .= HTML::style($css, array(), TRUE)."\n";
 				}
 			}
 		}
@@ -185,7 +185,6 @@ JS;
 		$merge_filetime = filemtime($path);
 
 		foreach($this->css as $file => $status){
-
 			$file_time = filemtime($this->getfile($file));
 
 			// 如果源文件的更新时间比合并的文件新，则需要重新合并
@@ -205,7 +204,8 @@ JS;
 		if($file){
 			return $file;
 		} else {
-			throw new Kohana_Exception('No such file was loaded by the media module.');
+			var_dump($file);die();
+			throw new Kohana_Exception('No such file :file was loaded by the media module.', array(':file' => $file));
 		}
 	}
 }
