@@ -37,15 +37,15 @@ class Kohana_Media{
 		$this->_config = Kohana::$config->load('media');
 	}
 
-	public function css($css){
+	public function css($css, array $attr = array()){
 		if (! isset($this->css[$css])) {
-			$this->css[$css] = TRUE;
+			$this->css[$css] = $attr;
 		}
 	}
 
-	public function js($js){
+	public function js($js, array $attr = array()){
 		if (! isset($this->js[$js])) {
-			$this->js[$js] = TRUE;
+			$this->js[$js] = $attr;
 		}
 	}
 
@@ -67,15 +67,16 @@ class Kohana_Media{
 	public function render_css(){
 		$style = '';
 		if(!empty($this->css)){
-			if($this->_config['merge_css']){ // 如果是开发状态，则不合并CSS
+			// 判断是否合并CSS
+			if($this->_config['merge_css']){
 				$merge_css = $this->merge_css();
 				if($merge_css){
 					return HTML::style($merge_css, array(), TRUE)."\n";
 				}
 			}
 
-			foreach($this->css as $css => $status){
-				$style .= HTML::style($this->_config['dir'].$css, array(), TRUE)."\n";
+			foreach($this->css as $css => $attr){
+				$style .= HTML::style($this->_config['dir'].$css, $attr, TRUE)."\n";
 			}
 		}
 
@@ -96,8 +97,8 @@ JS;
 		}
 
 		if(!empty($this->js)){
-			foreach($this->js as $js => $status){
-				$script .= HTML::script($this->_config['dir'].$js, array(), TRUE)."\n";
+			foreach($this->js as $js => $attr){
+				$script .= HTML::script($this->_config['dir'].$js, $attr, TRUE)."\n";
 			}
 		}
 		return $script;
@@ -143,7 +144,7 @@ JS;
 				Kohana_Exception::log($e);
 				return FALSE;
 			}
-			
+
 		}
 
 		return $this->get_merge_file();
