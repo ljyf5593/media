@@ -76,7 +76,7 @@ class Kohana_Media{
 			}
 
 			foreach($this->css as $css => $attr){
-				$style .= HTML::style($this->_config['dir'].$css, $attr, TRUE)."\n";
+				$style .= HTML::style($this->_config['domain'].$css, $attr, TRUE)."\n";
 			}
 		}
 
@@ -98,7 +98,7 @@ JS;
 
 		if(!empty($this->js)){
 			foreach($this->js as $js => $attr){
-				$script .= HTML::script($this->_config['dir'].$js, $attr, TRUE)."\n";
+				$script .= HTML::script($this->_config['domain'].$js, $attr, TRUE)."\n";
 			}
 		}
 		return $script;
@@ -201,7 +201,7 @@ JS;
 		$ext = pathinfo($file, PATHINFO_EXTENSION);
 		// Remove the extension from the filename
 		$filename = substr($file, 0, -(strlen($ext) + 1));
-		$file = Kohana::find_file($this->_config['dir'], $filename, $ext);
+		$file = Kohana::find_file($this->_config['domain'], $filename, $ext);
 		if($file){
 			return $file;
 		} else {

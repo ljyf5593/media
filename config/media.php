@@ -1,6 +1,6 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
 return array(
-    'dir' => 'media/',
+    'domain' => '',
 	'merge_css' => FALSE,
 );
