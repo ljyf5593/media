@@ -47,9 +47,9 @@ class Model_Attachment extends ORM {
 	 * @param array $file
 	 * @param array $data
 	 */
-	public function save_file(array $file){
+	public function save_file(array $file, $dir){
 		//创建文件上传路径
-		$upload_dir = $this->upload_dir();
+		$upload_dir = $this->upload_dir($dir);
 		$abs = Upload::$default_directory.DIRECTORY_SEPARATOR.$upload_dir;
 		if ($filename = Upload::save($file, NULL, $abs)){
 			// 大图片自动缩放
@@ -64,7 +64,7 @@ class Model_Attachment extends ORM {
 					$default_data['user_id'] = $login_user->pk();
 				}
 			}
-			
+
             $default_data['filename'] = $file['name'];
 			$default_data['filesize'] = $file['size'];
             $file_path = str_replace('\\', '/', $upload_dir);
@@ -92,10 +92,10 @@ class Model_Attachment extends ORM {
 	/**
 	 * 生成上传文件路径
 	 */
-	private function upload_dir(){
+	private function upload_dir($dir){
 
 		//生成年月文件夹和日期文件夹
-		$dir = date('Ym').DIRECTORY_SEPARATOR.date('d');
+		$dir .= DIRECTORY_SEPARATOR.date('Ym').DIRECTORY_SEPARATOR.date('d');
 		$abs = Upload::$default_directory.DIRECTORY_SEPARATOR.$dir;
 		if (!is_dir($abs)){
 			mkdir($abs, 0777, TRUE);

@@ -50,7 +50,7 @@ class Kohana_Media{
 	}
 
 	public function editor_js() {
-		$this->js('media/kindEditor/kindeditor-all-min.js');
+		$this->js('kindEditor/kindeditor-all-min.js');
 		$js_code = "var UPLOAD_URL = \"".URL::site('/attachment/upload')."\";\n";
 		$js_code .= "var FILE_MANAGE_URL = \"".URL::site('/attachment/manage')."\";\n";
 		$this->js_code($js_code);
